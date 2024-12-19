@@ -1,4 +1,4 @@
-# CS_Capstone Project
+# Code Race
 
 ## Database Used
 - [English Quotes Database](https://github.com/x16bkkamz6rkb78rzt7op/englishquotesdatabase/tree/master)
