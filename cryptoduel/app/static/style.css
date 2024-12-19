@@ -32,9 +32,43 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Cryptogram Display */
+#cryptogram-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow content to wrap onto the next line */
+    gap: 15px; /* Add space between words */
+    justify-content: flex-start; /* Right-align content */
+    max-width: 100%;
+    margin: 0 auto; /* Center horizontally */
+    padding: 10px;
+}
 
+/* Individual Letter Boxes */
+.cryptogram-box {
+    display: flex;
+    flex-direction: column; /* Stack blanks and ciphertext */
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ddd; /* Box border */
+    width: 40px;
+    height: 50px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1rem;
+    text-align: center;
+    line-height: 1.2;
+    background-color: #f9f9f9;
+}
+
+/* Blanks (Top Row in Each Box) */
 .blank-text {
-    color: #000; /* Text color for unsolved letters */
+    font-weight: normal;
+    color: #000;
+}
+
+/* Ciphertext (Bottom Row in Each Box) */
+.cipher-text {
+    font-weight: lighter;
+    color: #666;
 }
 
 /* Author Name Styling */
@@ -106,64 +140,4 @@ button:hover {
 
 #scrollable-container::-webkit-scrollbar-thumb:hover {
     background-color: #999999;
-}
-
-/* Cryptogram container */
-#cryptogram-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Adjust spacing between boxes */
-    justify-content: center;
-    padding: 20px;
-}
-
-/* Individual cryptogram boxes */
-.cryptogram-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: 40px;
-    height: 60px;
-    border: 1px solid #000;
-    font-family: monospace;
-    font-size: 18px;
-    text-align: center;
-    background-color: #fff;
-    box-sizing: border-box;
-}
-
-/* Top row: Ciphertext */
-.cipher-text {
-    font-size: 16px;
-    color: #000; /* Ensure the text is visible */
-    font-weight: normal; /* Remove bold */
-}
-
-/* Bottom row: Plaintext (substitution) */
-.plain-text {
-    font-size: 18px;
-    color: #000; /* Ensure the text is visible */
-    font-weight: normal; /* Remove bold */
-}
-
-/* Special styling for spaces */
-.space-box {
-    border: none;
-    width: 20px; /* Smaller width for spaces */
-    height: 60px; /* Maintain height */
-    background-color: transparent;
-}
-
-/* Top row: current substitution or _ */
-.char-display {
-    font-size: 20px;
-    font-weight: bold;
-    color: #000;
-}
-
-/* Bottom row: original character or placeholder */
-.box-placeholder {
-    font-size: 14px;
-    color: #666;
 }
