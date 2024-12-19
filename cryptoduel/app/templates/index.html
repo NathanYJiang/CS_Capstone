@@ -9,7 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <div id="game-container">
+        <!-- Add the tutorial button at the top -->
+        <div id="tutorial-button-container">
+            <button id="tutorial-button" onclick="openHelp()">How to Play</button>
+        </div>
+
         <h1>Code Race</h1>
         
         <!-- Cryptogram Display -->
@@ -23,8 +29,8 @@
         <!-- Input Field and Buttons -->
         <input type="text" id="guess" placeholder="Enter a substitution (e.g., A=B)">
         <div class="button-container">
-            <button id="submit-button" onclick="submitSubstitution()">Submit</button>
-            <button id="exit-button" onclick="exitGame()">Exit</button>
+            <button id="submit-button" onclick="submitSubstitution()">Enter</button>
+            <button id="exit-button" onclick="exitGame()">Quit</button>
             <button id="check-button" onclick="checkSolution()">Submit Solution</button>
         </div>
 

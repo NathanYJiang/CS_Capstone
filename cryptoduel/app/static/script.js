@@ -156,6 +156,11 @@ function exitGame() {
             document.getElementById("feedback").style.color = "red";
         });
 }
+
+function openHelp() {
+    window.open("https://cryptograms.puzzlebaron.com/tutorial.php", "_blank");
+}
+
 // Add keyboard support for Enter key
 document.getElementById("guess").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
