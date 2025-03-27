@@ -5,6 +5,10 @@ import re
 from ciphers import Cipher
 from ciphers import InteractiveDecoder
 from google import genai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -21,7 +25,7 @@ def index():
 def get_cryptogram():
     global decoder
     try:
-        client = genai.Client(api_key="AIzaSyB5nCCwyS3Oks5U9h8Oy1Lhls69t03_w1Y")
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
         response = client.models.generate_content(
             model="gemini-2.0-flash",
