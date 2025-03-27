@@ -34,7 +34,7 @@ def get_cryptogram():
 
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents="You are acting as a generator to generate quotes for Code Race, a project designed to help provide practice for the Science Olympiad event Codebusters. Give me a short quote and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            contents="You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. Give me a short quote, make sure to range quotes from a wide variety of genres and topics, and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
         )
         try:
             data = json.loads(response.text)
