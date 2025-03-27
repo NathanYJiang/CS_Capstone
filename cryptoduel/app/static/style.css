@@ -5,28 +5,28 @@ body {
     font-family: "Roboto", sans-serif;
     background: #f4f4f4;
     color: #333;
-  }
-  
-  /* Container for the cryptogram */
-  #cryptogram-container {
+}
+
+/* Container for the cryptogram */
+#cryptogram-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: flex-start;
     margin: 20px auto;
-    max-width: 90vw; /* ensures it doesn't overflow horizontally on small screens */
+    max-width: 90vw; /* prevents overflow on small screens */
     gap: 1vw;
-  }
-  
-  /* Each word is a row of letters. Keep them together. */
-  .word-box {
+}
+
+/* Each word is a row of letters */
+.word-box {
     display: flex;
     flex-wrap: nowrap;
     gap: 0.5vw;
-  }
-  
-  /* The capsule for each letter */
-  .cryptogram-box {
+}
+
+/* The capsule for each letter */
+.cryptogram-box {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -35,28 +35,26 @@ body {
     border-radius: 6px;
     background-color: #fff;
     box-sizing: border-box;
-    /* We'll define a "capsule" size using viewport-based units. */
     width: 8vw;
     height: 10vw;
-    min-width: 50px; /* fallback for bigger screens */
+    min-width: 50px; /* fallback */
     min-height: 60px;
     transition: all 0.2s ease-in-out;
-  }
-  
-  /* The ciphertext displayed on top */
-  .cipher-text {
+}
+
+/* Ciphertext displayed on top */
+.cipher-text {
     font-weight: bold;
     margin-bottom: 5px;
-    font-size: 4vw;    /* scale with screen */
+    font-size: 4vw;
     line-height: 1;
-    min-font-size: 20px; /* fallback for bigger screens */
-  }
-  
-  /* The plain input for substitution */
-  .plain-input {
-    width: 5vw;  /* narrower than the capsule */
+}
+
+/* Plaintext input for substitution */
+.plain-input {
+    width: 5vw;  /* slightly narrower than capsule */
     height: 5vw;
-    min-width: 30px; /* fallback */
+    min-width: 30px;
     min-height: 30px;
     font-size: 3vw;
     border: none;
@@ -66,47 +64,134 @@ body {
     box-sizing: border-box;
     outline: none;
     transition: all 0.2s;
-  }
-  
-  /* The space box for whitespace groups */
-  .space-box {
+}
+
+/* Space box for whitespace groups */
+.space-box {
     width: 4vw;
     height: 10vw;
     min-width: 30px;
     min-height: 60px;
     background-color: transparent;
-  }
-  
-  /* Provide some responsiveness with media queries */
-  @media (min-width: 800px) {
+}
+
+/* Media queries for responsiveness */
+@media (min-width: 800px) {
     .cryptogram-box {
-      width: 60px;
-      height: 80px;
+        width: 60px;
+        height: 80px;
     }
     .cipher-text {
-      font-size: 20px;
+        font-size: 20px;
     }
     .plain-input {
-      width: 40px;
-      height: 40px;
-      font-size: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
     .space-box {
-      width: 20px;
-      height: 80px;
+        width: 20px;
+        height: 80px;
     }
-  }
-  
-  /* Feedback styling */
-  #feedback {
+}
+
+/* Feedback styling */
+#feedback {
     text-align: center;
     margin-top: 1rem;
     font-weight: bold;
     font-size: 1rem;
-  }
-  
-  .solution-text {
+}
+
+.solution-text {
     text-align: center;
     font-size: 1.2rem;
     margin-top: 20px;
-  }
+}
+
+/* Button Container to center buttons */
+.button-container {
+    text-align: center;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 90vw;
+}
+
+/* Difficulty Buttons container */
+#difficulty-buttons {
+    text-align: center;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+/* Coffee-Themed Button Styles */
+button {
+    background-color: #8B4513; /* Rich coffee-brown tone */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-family: "Roboto", sans-serif;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #A0522D; /* Lighter brown on hover */
+    transform: scale(1.05);
+}
+
+/* Coffee Cafe Vibes for Key Text Sections */
+
+/* Main title "CODE RACE" (assumed h1) */
+h1 {
+    color: #5D4037; /* Dark brown */
+    background-color: #D7CCC8; /* Cozy light coffee tone */
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 20px auto;
+    max-width: 90%;
+}
+
+/* Instruction text (e.g., "CLICK ON A LETTER IN THE CRYPTOGRAM TO ENTER YOUR SUBSTITUTION") */
+.instruction {
+    color: #5D4037;
+    background-color: #EFEBE9; /* Very light, warm brown */
+    padding: 12px 20px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 10px auto;
+    max-width: 90%;
+}
+
+/* Author info (e.g., "AUTHOR: ...") */
+#author-name {
+    color: #5D4037;
+    background-color: #D7CCC8;
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 1rem;
+    margin: 10px auto;
+    max-width: 90%;
+}
+
+/* Difficulty Indicator - Top Right Corner */
+#difficulty-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #D7CCC8; /* Cozy light coffee tone */
+    color: #5D4037; /* Dark brown */
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}

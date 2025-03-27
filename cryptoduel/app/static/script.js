@@ -1,5 +1,5 @@
 // script.js
-// Final regenerated version: Clean cryptogram UI with global autofill and auto-tab
+// Final version: Clean cryptogram UI with global autofill, auto-tab to next/previous input, and arrow key navigation
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -19,9 +19,8 @@ async function fetchCryptogram() {
     const response = await fetch("/get_cryptogram");
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-    if (!data.cryptogram || !data.author) {
+    if (!data.cryptogram || !data.author)
       throw new Error("Incomplete cryptogram data received.");
-    }
     originalEncryptedText = data.cryptogram;
     renderCryptogram(originalEncryptedText);
     document.getElementById("author-name").textContent = `Author: ${data.author}`;
@@ -33,22 +32,20 @@ async function fetchCryptogram() {
 
 /**
  * Render the cryptogram by grouping text into words and spaces.
- * Letters become editable inputs; punctuation and digits become disabled.
+ * Editable letters become inputs; punctuation/digits become fixed.
  */
 function renderCryptogram(text) {
   const container = document.getElementById("cryptogram-container");
   container.innerHTML = "";
   letterBoxes = [];
 
-  // Split into groups: words and whitespace (preserving spaces)
+  // Split text into groups (words and whitespace)
   const groups = text.match(/\S+|\s+/g) || [text];
-
   groups.forEach((group) => {
     if (/^\s+$/.test(group)) {
       // Create a visible space element
       const spaceBox = document.createElement("div");
       spaceBox.className = "space-box";
-      // Optionally display the space (or leave it empty for styling)
       spaceBox.textContent = group;
       container.appendChild(spaceBox);
     } else {
@@ -59,26 +56,26 @@ function renderCryptogram(text) {
         const box = document.createElement("div");
         box.className = "cryptogram-box";
 
-        // Top row: ciphertext (always shown)
+        // Top: ciphertext display
         const cipherDiv = document.createElement("div");
         cipherDiv.className = "cipher-text";
         cipherDiv.textContent = char;
 
-        // Bottom row: input element
+        // Bottom: input for substitution
         const input = document.createElement("input");
         input.className = "plain-input";
         input.type = "text";
         input.maxLength = 1;
 
         if (char.match(/[A-Za-z]/)) {
-          // Editable letter: allow substitution.
+          // Editable letter
           input.dataset.originalLetter = char.toUpperCase();
           const index = letterBoxes.length;
           input.dataset.index = index;
           input.addEventListener("keydown", (e) => handleKeyDown(e, index));
           letterBoxes.push(input);
         } else {
-          // For punctuation/digits: fix the value and disable editing.
+          // Punctuation/digits: fixed
           input.value = char;
           input.disabled = true;
           input.dataset.originalLetter = char;
@@ -94,35 +91,62 @@ function renderCryptogram(text) {
 }
 
 /**
- * Handle keydown events on editable inputs.
- * - Backspace: clear the input and auto-tab to next empty input.
- * - Tab: jump to next empty input.
- * - A–Z: set the input, send substitution, and auto-tab.
+ * Handle keydown events on each editable input.
+ * - ENTER: submits (checks) the solution.
+ * - Backspace: clears the input and moves focus to the previous input.
+ * - ArrowLeft/ArrowRight: navigate left/right.
+ * - Tab: moves focus to the next empty input.
+ * - A–Z: processes the input, sends the substitution, and auto-focuses the next empty input.
  */
 async function handleKeyDown(event, index) {
-  if (event.key === "Backspace") {
-    event.preventDefault();
-    event.target.value = "";
-    await sendSubstitution(index, "");
-    focusNextUnfilledLetter(index);
-    return;
-  }
-  if (event.key === "Tab") {
-    event.preventDefault();
-    focusNextUnfilledLetter(index);
-    return;
-  }
-  const key = event.key.toUpperCase();
-  if (key >= "A" && key <= "Z") {
+    // Process allowed special keys first
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      focusPreviousLetter(index);
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      focusNextLetter(index);
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      checkSolution();
+      return;
+    }
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      // Clear current input (if not already empty)
+      if (event.target.value.trim() !== "") {
+        event.target.value = "";
+        await sendSubstitution(index, "");
+      }
+      // Always move focus to the previous input.
+      focusPreviousLetter(index);
+      return;
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      focusNextUnfilledLetter(index);
+      return;
+    }
+  
+    // Only process if the key is a single letter A-Z.
+    if (!/^[A-Za-z]$/.test(event.key)) {
+      // Ignore any non-letter keys (e.g., Command, Option, Shift, etc.)
+      return;
+    }
+    
+    const key = event.key.toUpperCase();
     event.preventDefault();
     event.target.value = key;
     await sendSubstitution(index, key);
     focusNextUnfilledLetter(index);
   }
-}
 
 /**
- * Auto-focus the next input box that is empty.
+ * Move focus to the next empty input box.
  */
 function focusNextUnfilledLetter(currentIndex) {
   for (let i = currentIndex + 1; i < letterBoxes.length; i++) {
@@ -131,20 +155,37 @@ function focusNextUnfilledLetter(currentIndex) {
       return;
     }
   }
-  // Fallback: if none are empty, focus the very next input if it exists.
+  // Fallback: if none are empty, focus the next box.
   if (currentIndex + 1 < letterBoxes.length) {
     letterBoxes[currentIndex + 1].focus();
   }
 }
 
 /**
- * Send the substitution for a given input and perform global autofill.
+ * Move focus to the next input box (regardless of its content).
+ */
+function focusNextLetter(currentIndex) {
+  if (currentIndex + 1 < letterBoxes.length) {
+    letterBoxes[currentIndex + 1].focus();
+  }
+}
+
+/**
+ * Move focus to the previous input box (regardless of its content).
+ */
+function focusPreviousLetter(currentIndex) {
+  if (currentIndex - 1 >= 0) {
+    letterBoxes[currentIndex - 1].focus();
+  }
+}
+
+/**
+ * Send the substitution to the server and update all inputs with the same original letter.
  */
 async function sendSubstitution(index, guessedLetter) {
   const input = letterBoxes[index];
   const originalLetter = input.dataset.originalLetter;
   if (!originalLetter.match(/[A-Z]/)) return;
-
   try {
     const response = await fetch("/apply_substitution", {
       method: "POST",
@@ -156,14 +197,12 @@ async function sendSubstitution(index, guessedLetter) {
     });
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-
-    // Global autofill: update all inputs with the same original letter.
+    // Global autofill: update every input with the same original letter.
     letterBoxes.forEach((inp) => {
       if (inp.dataset.originalLetter === originalLetter) {
         inp.value = guessedLetter;
       }
     });
-
     showFeedback(`Substitution applied for ${originalLetter} → ${guessedLetter}`, "green");
   } catch (error) {
     console.error("Error applying substitution:", error);
@@ -172,7 +211,7 @@ async function sendSubstitution(index, guessedLetter) {
 }
 
 /**
- * Check the solution by sending a request to the server.
+ * Check if the solution is correct.
  */
 async function checkSolution() {
   try {
@@ -193,7 +232,7 @@ async function checkSolution() {
 }
 
 /**
- * Exit the game and reveal the solution.
+ * Reveal the solution and end the game.
  */
 function exitGame() {
   if (solutionRevealed) return;
@@ -207,7 +246,6 @@ function exitGame() {
       if (data.error) throw new Error(data.error);
       const solution = data.solution || "Solution unavailable.";
       showFeedback(`Game Over. Solution: ${solution}`, "blue");
-
       const container = document.getElementById("cryptogram-container");
       container.innerHTML = "";
       const solutionElem = document.createElement("p");
@@ -230,7 +268,7 @@ function showFeedback(message, color) {
   feedback.style.color = color;
 }
 
-// Expose functions to HTML buttons
+// Expose functions to HTML buttons.
 window.checkSolution = checkSolution;
 window.exitGame = exitGame;
 window.openHelp = function () {
