@@ -32,9 +32,28 @@ def get_cryptogram():
     try:
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+        # Read difficulty from query param, default to "medium"
+        difficulty = request.args.get("difficulty", "medium").lower()
+
+        if difficulty == "easy":
+            prompt = (
+                "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
+                "Give me a short and simple inspirational quote using plain language, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            )
+        elif difficulty == "hard":
+            prompt = (
+                "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
+                "Give me a thought-provoking and complex quote with elevated vocabulary, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            )
+        else:  # medium
+            prompt = (
+                "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
+                "Give me a moderately difficult quote with decent vocabulary variation, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            )
+
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents="You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. Give me a short quote, make sure to range quotes from a wide variety of genres and topics, and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            contents=prompt
         )
         try:
             data = json.loads(response.text)

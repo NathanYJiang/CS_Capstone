@@ -159,14 +159,16 @@ h1 {
 /* Instruction text (e.g., "CLICK ON A LETTER IN THE CRYPTOGRAM TO ENTER YOUR SUBSTITUTION") */
 .instruction {
     color: #5D4037;
-    background-color: #EFEBE9; /* Very light, warm brown */
+    background-color: #EFEBE9;
     padding: 12px 20px;
     border-radius: 6px;
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
-    margin: 10px auto;
-    max-width: 90%;
+    display: flex;
+    justify-content: center;
+    margin: 10px auto 20px auto;
+    width: 100%;
 }
 
 /* Author info (e.g., "AUTHOR: ...") */

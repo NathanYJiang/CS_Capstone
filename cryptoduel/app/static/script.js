@@ -1,5 +1,4 @@
-// script.js
-// Final version: Clean cryptogram UI with global autofill, auto-tab to next/previous input, and arrow key navigation
+let difficulty = "medium";
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -9,6 +8,24 @@ let solutionRevealed = false;
 
 function init() {
   fetchCryptogram();
+
+  document.getElementById("easy-btn")?.addEventListener("click", () => {
+    difficulty = "easy";
+    document.getElementById("difficulty-indicator").textContent = "Difficulty: Easy";
+    fetchCryptogram();
+  });
+
+  document.getElementById("medium-btn")?.addEventListener("click", () => {
+    difficulty = "medium";
+    document.getElementById("difficulty-indicator").textContent = "Difficulty: Medium";
+    fetchCryptogram();
+  });
+
+  document.getElementById("hard-btn")?.addEventListener("click", () => {
+    difficulty = "hard";
+    document.getElementById("difficulty-indicator").textContent = "Difficulty: Hard";
+    fetchCryptogram();
+  });
 }
 
 /**
@@ -16,7 +33,7 @@ function init() {
  */
 async function fetchCryptogram() {
   try {
-    const response = await fetch("/get_cryptogram");
+    const response = await fetch(`/get_cryptogram?difficulty=${difficulty}`);
     const data = await response.json();
     if (data.error) throw new Error(data.error);
     if (!data.cryptogram || !data.author)
