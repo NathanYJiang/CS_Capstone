@@ -1,7 +1,6 @@
 import random
 import string
 import numpy as np
-from quotes import db
 
 
 class Cipher:

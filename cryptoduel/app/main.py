@@ -1,7 +1,10 @@
 from flask import Flask, render_template, jsonify, request
-from ciphers import Cipher, InteractiveDecoder
+import json
 import random
-from quotes import db
+import re
+from ciphers import Cipher
+from ciphers import InteractiveDecoder
+from google import genai
 
 app = Flask(__name__)
 
@@ -18,8 +21,25 @@ def index():
 def get_cryptogram():
     global decoder
     try:
-        # Randomly select a quote
-        quote, author = random.choice(db)
+        client = genai.Client(api_key="AIzaSyB5nCCwyS3Oks5U9h8Oy1Lhls69t03_w1Y")
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents="Give me a short inspirational quote and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
+        )
+        try:
+            data = json.loads(response.text)
+            quote = data.get("quote")
+            author = data.get("author")
+        except json.JSONDecodeError:
+            print("Falling back to regex parsing.")
+            text = response.text.strip()
+            match = re.search(r'"quote"\s*:\s*"([^"]+)"\s*,\s*"author"\s*:\s*"([^"]+)"', text)
+            if not match:
+                raise ValueError("Gemini response is not valid JSON or properly formatted string")
+            quote, author = match.group(1), match.group(2)
+        if not quote or not author:
+            raise ValueError("Invalid data received from Gemini model")
 
         # Initialize Cipher and encrypt the quote
         cipher = Cipher()
