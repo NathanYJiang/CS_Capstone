@@ -1,187 +1,112 @@
-/* General Styles */
+/* Base font and layout */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-/* Main Container */
-#game-container {
-    background: white;
-    padding: 20px 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 800px;
-    text-align: left;
-}
-
-/* Title Styling */
-h1 {
-    font-family: "Roboto Slab", serif; /* Sleek font */
-    font-size: 3rem;
-    font-weight: bold;
-    text-align: center; /* Right-align title */
+    font-family: "Roboto", sans-serif;
+    background: #f4f4f4;
     color: #333;
-    margin-bottom: 20px;
-}
-
-/* Cryptogram container */
-#cryptogram-container {
+  }
+  
+  /* Container for the cryptogram */
+  #cryptogram-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* Adjust spacing between words */
-    justify-content: flex-start; /* Left-align the text */
-    align-content: flex-start; /* Align content to the top */
-    padding: 20px;
-    width: 100%; /* Ensure full-width usage */
-    box-sizing: border-box; /* Include padding in width calculation */
-    overflow-wrap: break-word; /* Handle word wrapping */
-    word-wrap: break-word; /* Legacy for IE */
-    white-space: normal; /* Allow natural word breaks */
-}
-
-/* Individual cryptogram boxes */
-.cryptogram-box {
+    justify-content: center;
+    align-items: flex-start;
+    margin: 20px auto;
+    max-width: 90vw; /* ensures it doesn't overflow horizontally on small screens */
+    gap: 1vw;
+  }
+  
+  /* Each word is a row of letters. Keep them together. */
+  .word-box {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5vw;
+  }
+  
+  /* The capsule for each letter */
+  .cryptogram-box {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
-    width: 40px; /* Fixed width for letters */
-    height: 60px;
-    border: 1px solid #000;
-    font-family: monospace;
-    font-size: 18px;
-    text-align: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
     background-color: #fff;
     box-sizing: border-box;
-}
-
-/* Special styling for spaces (preserve word boundaries) */
-.space-box {
+    /* We'll define a "capsule" size using viewport-based units. */
+    width: 8vw;
+    height: 10vw;
+    min-width: 50px; /* fallback for bigger screens */
+    min-height: 60px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* The ciphertext displayed on top */
+  .cipher-text {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 4vw;    /* scale with screen */
+    line-height: 1;
+    min-font-size: 20px; /* fallback for bigger screens */
+  }
+  
+  /* The plain input for substitution */
+  .plain-input {
+    width: 5vw;  /* narrower than the capsule */
+    height: 5vw;
+    min-width: 30px; /* fallback */
+    min-height: 30px;
+    font-size: 3vw;
     border: none;
-    width: 20px; /* Adjust spacing for spaces */
-    height: 60px;
+    background: #f9f9f9;
+    text-align: center;
+    text-transform: uppercase;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.2s;
+  }
+  
+  /* The space box for whitespace groups */
+  .space-box {
+    width: 4vw;
+    height: 10vw;
+    min-width: 30px;
+    min-height: 60px;
     background-color: transparent;
-    flex-grow: 0; /* Prevent spaces from stretching */
-}
-
-/* Ensure words are not split between lines */
-#scrollable-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    white-space: pre-wrap; /* Respect word boundaries and wrapping */
-    word-break: break-word; /* Handle long words gracefully */
-}
-
-/* Blanks (Top Row in Each Box) */
-.blank-text {
-    font-weight: normal;
-    color: #000;
-}
-
-/* Ciphertext (Bottom Row in Each Box) */
-.cipher-text {
-    font-weight: lighter;
-    color: #666;
-}
-
-/* Author Name Styling */
-#author-name {
-    font-style: italic;
-    color: #777;
-    text-align: right; /* Right-align author name */
-    margin-top: 10px;
-    margin-bottom: 20px;
-}
-
-/* Input Field */
-input[type="text"] {
-    display: block;
-    margin: 0 auto 15px auto; /* Center align */
-    width: 80%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+  }
+  
+  /* Provide some responsiveness with media queries */
+  @media (min-width: 800px) {
+    .cryptogram-box {
+      width: 60px;
+      height: 80px;
+    }
+    .cipher-text {
+      font-size: 20px;
+    }
+    .plain-input {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+    .space-box {
+      width: 20px;
+      height: 80px;
+    }
+  }
+  
+  /* Feedback styling */
+  #feedback {
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: bold;
     font-size: 1rem;
-}
-
-/* Button Styles */
-.button-container {
-    display: flex;
-    gap: 10px; /* Space between buttons */
-}
-
-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-/* Feedback Text */
-#feedback {
-    margin-top: 15px;
-    font-size: 1rem;
-    color: red;
-}
-
-/* Scrollable Cryptogram Container */
-#scrollable-container {
-    max-height: 400px; /* Adjust height to your preference */
-    overflow-y: auto; /* Enable vertical scrolling */
-    padding: 10px;
-    border: 1px solid #ddd; /* Optional: Add a border for clarity */
-    border-radius: 5px; /* Optional: Add rounded corners */
-}
-
-/* Custom Scrollbar Styling */
-#scrollable-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-#scrollable-container::-webkit-scrollbar-thumb {
-    background-color: #cccccc;
-    border-radius: 4px;
-}
-
-#scrollable-container::-webkit-scrollbar-thumb:hover {
-    background-color: #999999;
-}
-
-
-/* Tutorial Button Container */
-#tutorial-button-container {
-    position: relative; /* Position relative to #game-container */
-    margin-bottom: 10px; /* Add spacing below the button */
-}
-
-#tutorial-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#tutorial-button:hover {
-    background-color: #45a049;
-}
+  }
+  
+  .solution-text {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 20px;
+  }

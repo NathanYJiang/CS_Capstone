@@ -7,8 +7,13 @@ from ciphers import InteractiveDecoder
 from google import genai
 import os
 from dotenv import load_dotenv
+import textwrap  # import textwrap for wrapping text
 
 load_dotenv()
+
+# Helper function to wrap text without cutting words
+def wrap_text(text, width=80):
+    return textwrap.fill(text, width=width)
 
 app = Flask(__name__)
 
@@ -29,7 +34,7 @@ def get_cryptogram():
 
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents="Give me a short inspirational quote and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
+            contents="You are acting as a generator to generate quotes for Code Race, a project designed to help provide practice for the Science Olympiad event Codebusters. Give me a short quote and the author in JSON format like this: {\"quote\": \"...\", \"author\": \"...\"}"
         )
         try:
             data = json.loads(response.text)
@@ -48,6 +53,9 @@ def get_cryptogram():
         # Initialize Cipher and encrypt the quote
         cipher = Cipher()
         encrypted = cipher.encrypt(quote)
+        
+        # Wrap the encrypted text so words aren't cut off at the edge
+        encrypted = wrap_text(encrypted, width=80)
 
         # Initialize InteractiveDecoder for this cryptogram
         decoder = InteractiveDecoder(
@@ -65,32 +73,22 @@ def get_cryptogram():
 def apply_substitution():
     global decoder
     data = request.json
-    substitution = data.get("substitution")  # Expecting "A=B" or "A="
+    original_letter = data.get("original_letter")
+    guessed_letter = data.get("guessed_letter")  # Can be empty string if user clears input
 
     if not decoder:
         return jsonify({"error": "No active cryptogram"}), 400
+    if not original_letter:
+        return jsonify({"error": "Missing original_letter"}), 400
 
     try:
-        if "=" in substitution:
-            parts = substitution.split("=")
-            if len(parts) != 2:
-                return jsonify({"error": "Invalid format. Use 'A=B' or 'A='."}), 400
-
-            original_letter, guessed_letter = parts
-            guessed_letter = (
-                guessed_letter if guessed_letter else None
-            )  # Handle "A=" case
-
-            # Update the guess using InteractiveDecoder
-            decoder.update_guess(
-                original_letter.upper(),
-                guessed_letter.upper() if guessed_letter else "",
-            )
-
-            # Return the updated guess to the frontend
-            return jsonify({"updatedGuess": "".join(decoder.guessed_message)})
-        else:
-            return jsonify({"error": "Invalid format. Use 'A=B' or 'A='."}), 400
+        # Update the guess using InteractiveDecoder based on the clicked letter
+        decoder.update_guess(
+            original_letter.upper(),
+            guessed_letter.upper() if guessed_letter else ""
+        )
+        # Return the updated guess to the frontend
+        return jsonify({"updatedGuess": "".join(decoder.guessed_message)})
     except Exception as e:
         print("Error applying substitution:", e)
         return jsonify({"error": "Failed to apply substitution"}), 500
@@ -112,7 +110,6 @@ def check_solution():
         return jsonify({"correct": is_correct})
 
     except Exception as e:
-        # Log the error and return a generic failure message
         print("Error in check_solution:", e)
         return jsonify({"error": "Failed to verify solution"}), 500
 

@@ -1,171 +1,223 @@
-let substitutions = {}; // Track all substitutions
-let originalEncryptedText = ""; // Keep track of the original encrypted message
+// script.js
+// Final version: Clean cryptogram UI with global autofill and auto-tab to next empty input
+
+document.addEventListener("DOMContentLoaded", init);
+
+let letterBoxes = [];
+let originalEncryptedText = "";
 let solutionRevealed = false;
-async function fetchCryptogram() {
-    try {
-        const response = await fetch("/get_cryptogram");
-        const data = await response.json();
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        if (!data.cryptogram || !data.author) {
-            throw new Error("Incomplete cryptogram data received from the server.");
-        }
-        originalEncryptedText = data.cryptogram;
-        console.log("Original encrypted text length:", originalEncryptedText.length);
-        // Render the cryptogram
-        const cryptogramContainer = document.getElementById("cryptogram-container");
-        cryptogramContainer.innerHTML = ""; // Clear old content
-        originalEncryptedText.split("").forEach((char) => {
-            // Create the outer box container
-            const box = document.createElement("div");
-            box.className = "cryptogram-box";
-            // Create the ciphertext (top row)
-            const cipherText = document.createElement("div");
-            cipherText.className = "cipher-text";
-            cipherText.textContent = char; // Display the original ciphertext character
-            // Create the plaintext (bottom row, starts as underscore)
-            const plainText = document.createElement("div");
-            plainText.className = "plain-text";
-            plainText.textContent = char.match(/[a-zA-Z]/) ? "_" : char; // Default to `_` for letters
-            // Append both rows to the box
-            box.appendChild(cipherText);
-            box.appendChild(plainText);
-            // Add a special class for spaces
-            if (char === " ") {
-                box.classList.add("space-box");
-                cipherText.textContent = ""; // No display for spaces
-                plainText.textContent = ""; // No display for spaces
-            }
-            cryptogramContainer.appendChild(box);
-        });
-    } catch (error) {
-        console.error("Error fetching cryptogram:", error);
-        document.getElementById("feedback").textContent = "Error loading cryptogram.";
-        document.getElementById("feedback").style.color = "red";
-    }
+
+function init() {
+  fetchCryptogram();
 }
-async function updateProgress(updatedText) {
-    const blankChars = updatedText.split(""); // Break the updated text into individual characters
-    const plainTextBoxes = document.querySelectorAll(".cryptogram-box .plain-text"); // Select the plain-text elements
-    console.log("Updated guess length:", blankChars.length);
-    console.log("Number of plain-text elements:", plainTextBoxes.length);
-    // Check for length mismatch
-    if (blankChars.length !== plainTextBoxes.length) {
-        console.warn("Length mismatch! Check server output formatting.");
-        return; // Prevent further execution if lengths don't match
+
+/**
+ * Fetch the cryptogram from the server and render it.
+ */
+async function fetchCryptogram() {
+  try {
+    const response = await fetch("/get_cryptogram");
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.cryptogram || !data.author)
+      throw new Error("Incomplete cryptogram data received.");
+    originalEncryptedText = data.cryptogram;
+    renderCryptogram(originalEncryptedText);
+    document.getElementById("author-name").textContent = `Author: ${data.author}`;
+  } catch (error) {
+    console.error("Error fetching cryptogram:", error);
+    showFeedback("Error loading cryptogram.", "red");
+  }
+}
+
+/**
+ * Render the cryptogram, grouping letters into words and spaces.
+ */
+function renderCryptogram(text) {
+  const container = document.getElementById("cryptogram-container");
+  container.innerHTML = "";
+  letterBoxes = [];
+  // Split text into groups (words and whitespace)
+  const groups = text.match(/\S+|\s+/g) || [text];
+  groups.forEach((group) => {
+    if (/^\s+$/.test(group)) {
+      // Create a space box for whitespace
+      const spaceBox = document.createElement("div");
+      spaceBox.className = "space-box";
+      // Optionally display the space visibly:
+      spaceBox.textContent = group;
+      container.appendChild(spaceBox);
+    } else {
+      // Create a container for the word
+      const wordBox = document.createElement("div");
+      wordBox.className = "word-box";
+      group.split("").forEach((char) => {
+        const box = document.createElement("div");
+        box.className = "cryptogram-box";
+
+        // Top row: ciphertext display
+        const cipherDiv = document.createElement("div");
+        cipherDiv.className = "cipher-text";
+        cipherDiv.textContent = char;
+
+        // Bottom row: plaintext input for substitution
+        const input = document.createElement("input");
+        input.className = "plain-input";
+        input.type = "text";
+        input.maxLength = 1;
+        input.dataset.originalLetter = char.toUpperCase();
+
+        // Assign a stable index and attach event listener
+        const index = letterBoxes.length;
+        input.dataset.index = index;
+        input.addEventListener("keydown", (e) => handleKeyDown(e, index));
+
+        box.appendChild(cipherDiv);
+        box.appendChild(input);
+        wordBox.appendChild(box);
+        letterBoxes.push(input);
+      });
+      container.appendChild(wordBox);
     }
-    // Update each plain-text element with the corresponding character
-    plainTextBoxes.forEach((box, i) => {
-        box.textContent = blankChars[i] || "_"; // Replace underscore with updated guess
+  });
+}
+
+/**
+ * Handle keydown events on each plaintext input.
+ * - Backspace: clears the input, sends an empty guess, then auto-focuses next empty input.
+ * - Tab: auto-focuses the next empty input.
+ * - A–Z: submits the guess, performs global autofill, then moves focus to the next empty input.
+ */
+async function handleKeyDown(event, index) {
+  if (event.key === "Backspace") {
+    event.preventDefault();
+    event.target.value = "";
+    await sendSubstitution(index, "");
+    focusNextUnfilledLetter(index);
+    return;
+  }
+  if (event.key === "Tab") {
+    event.preventDefault();
+    focusNextUnfilledLetter(index);
+    return;
+  }
+  const key = event.key.toUpperCase();
+  if (key >= "A" && key <= "Z") {
+    event.preventDefault();
+    event.target.value = key;
+    await sendSubstitution(index, key);
+    focusNextUnfilledLetter(index);
+  }
+}
+
+/**
+ * Auto-focus the next empty input box.
+ */
+function focusNextUnfilledLetter(currentIndex) {
+  for (let i = currentIndex + 1; i < letterBoxes.length; i++) {
+    if (letterBoxes[i].value.trim() === "") {
+      letterBoxes[i].focus();
+      return;
+    }
+  }
+  // Fallback: if no empty box is found, focus the next box regardless.
+  if (currentIndex + 1 < letterBoxes.length) {
+    letterBoxes[currentIndex + 1].focus();
+  }
+}
+
+/**
+ * Send the substitution to the server and perform global autofill.
+ */
+async function sendSubstitution(index, guessedLetter) {
+  const input = letterBoxes[index];
+  const originalLetter = input.dataset.originalLetter;
+  if (!originalLetter.match(/[A-Z]/)) return;
+  try {
+    const response = await fetch("/apply_substitution", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        original_letter: originalLetter,
+        guessed_letter: guessedLetter,
+      }),
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    // Global autofill: update every input with the same original letter
+    letterBoxes.forEach((inp) => {
+      if (inp.dataset.originalLetter === originalLetter) {
+        inp.value = guessedLetter;
+      }
+    });
+    showFeedback(`Substitution applied for ${originalLetter} -> ${guessedLetter}`, "green");
+  } catch (error) {
+    console.error("Error applying substitution:", error);
+    showFeedback("Error applying substitution.", "red");
+  }
+}
+
+/**
+ * Check if the solution is correct.
+ */
+async function checkSolution() {
+  try {
+    const response = await fetch("/check_solution", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await response.json();
+    if (data.correct) {
+      showFeedback("Congratulations! You solved it!", "green");
+    } else {
+      showFeedback("Incorrect solution. Keep trying!", "red");
+    }
+  } catch (error) {
+    console.error("Error checking solution:", error);
+    showFeedback("Error checking solution.", "red");
+  }
+}
+
+/**
+ * Reveal the solution and end the game.
+ */
+function exitGame() {
+  if (solutionRevealed) return;
+  solutionRevealed = true;
+  fetch("/decrypt", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.error) throw new Error(data.error);
+      const solution = data.solution || "Solution unavailable.";
+      showFeedback(`Game Over. Solution: ${solution}`, "blue");
+      const container = document.getElementById("cryptogram-container");
+      container.innerHTML = "";
+      const solutionElem = document.createElement("p");
+      solutionElem.className = "solution-text";
+      solutionElem.textContent = solution;
+      container.appendChild(solutionElem);
+    })
+    .catch((error) => {
+      console.error("Error exiting game:", error);
+      showFeedback(`Error: ${error.message}`, "red");
     });
 }
-// Submit a substitution
-async function submitSubstitution() {
-    const substitutionInput = document.getElementById("guess");
-    const substitution = substitutionInput.value; // e.g., "A=B"
-    // Validate substitution format
-    if (!substitution.includes("=") || substitution.length < 2) {
-        document.getElementById("feedback").textContent =
-            "Invalid format. Use 'A=B' or 'A=' to clear.";
-        document.getElementById("feedback").style.color = "red";
-        return;
-    }
-    try {
-        const response = await fetch("/apply_substitution", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ substitution }),
-        });
-        const data = await response.json();
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        console.log("Updated guess received from server:", data.updatedGuess);
-        console.log("Updated guess length:", data.updatedGuess.length);
-        console.log("Original cryptogram length:", originalEncryptedText.length);
-        // Update the partially solved cryptogram
-        updateProgress(data.updatedGuess);
-        document.getElementById("feedback").textContent = "Substitution applied!";
-        document.getElementById("feedback").style.color = "green";
-        // Clear the input field
-        substitutionInput.value = "";
-    } catch (error) {
-        console.error("Error applying substitution:", error);
-        document.getElementById("feedback").textContent = "Error applying substitution.";
-        document.getElementById("feedback").style.color = "red";
-    }
-}
-// Submit the solution
-async function checkSolution() {
-    try {
-        const response = await fetch("/check_solution", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        if (data.correct) {
-            document.getElementById("feedback").textContent = "Congratulations! You solved it!";
-            document.getElementById("feedback").style.color = "green";
-        } else {
-            document.getElementById("feedback").textContent = "Incorrect solution. Keep trying!";
-            document.getElementById("feedback").style.color = "red";
-        }
-    } catch (error) {
-        console.error("Error checking solution:", error);
-        document.getElementById("feedback").textContent = "Error checking solution.";
-        document.getElementById("feedback").style.color = "red";
-    }
-}
-// Exit the game and reveal the solution
-function exitGame() {
-    if (solutionRevealed) return;
-    solutionRevealed = true;
-    fetch("/decrypt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            const solution = data.solution || "Solution unavailable.";
-            document.getElementById("feedback").textContent = `Game Over. Solution: ${solution}`;
-            document.getElementById("feedback").style.color = "blue";
-            // Display the solution line-by-line in the cryptogram container
-            const cryptogramContainer = document.getElementById("cryptogram-container");
-            cryptogramContainer.innerHTML = ""; // Clear old content
-            // Split the solution into lines
-            const solutionLines = solution.split("\n");
-            const cipherLines = originalEncryptedText.split("\n");
-            for (let i = 0; i < cipherLines.length; i++) {
-                const cipherLine = document.createElement("p");
-                cipherLine.textContent = cipherLines[i];
-                cipherLine.className = "cryptogram-text";
-                const solutionLine = document.createElement("p");
-                solutionLine.textContent = solutionLines[i] || "";
-                solutionLine.className = "cryptogram-text";
-                cryptogramContainer.appendChild(cipherLine);
-                cryptogramContainer.appendChild(solutionLine);
-            }
-        })
-        .catch((error) => {
-            console.error("Error exiting game:", error);
-            document.getElementById("feedback").textContent = `Error: ${error.message}`;
-            document.getElementById("feedback").style.color = "red";
-        });
+
+/**
+ * Display a feedback message.
+ */
+function showFeedback(message, color) {
+  const feedback = document.getElementById("feedback");
+  feedback.textContent = message;
+  feedback.style.color = color;
 }
 
-function openHelp() {
-    window.open("https://cryptograms.puzzlebaron.com/tutorial.php", "_blank");
-}
-
-// Add keyboard support for Enter key
-document.getElementById("guess").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        submitSubstitution();
-    }
-});
-// Fetch cryptogram on page load
-window.onload = fetchCryptogram;
+// Expose functions to HTML buttons
+window.checkSolution = checkSolution;
+window.exitGame = exitGame;
+window.openHelp = function () {
+  window.open("https://cryptograms.puzzlebaron.com/tutorial.php", "_blank");
+};

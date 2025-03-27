@@ -1,42 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Race</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Code Race</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="game-container">
-        <!-- Add the tutorial button at the top -->
-        <div id="tutorial-button-container">
-            <button id="tutorial-button" onclick="openHelp()">How to Play</button>
-        </div>
-
-        <h1>Code Race</h1>
-        
-        <!-- Cryptogram Display -->
-        <div id="scrollable-container">
-            <div id="cryptogram-container"></div>
-        </div>
-        
-        <!-- Author Info -->
-        <p id="author-name"></p>
-
-        <!-- Input Field and Buttons -->
-        <input type="text" id="guess" placeholder="Enter a substitution (e.g., A=B)">
-        <div class="button-container">
-            <button id="submit-button" onclick="submitSubstitution()">Enter</button>
-            <button id="exit-button" onclick="exitGame()">Quit</button>
-            <button id="check-button" onclick="checkSolution()">Submit Solution</button>
-        </div>
-
-        <!-- Feedback -->
-        <p id="feedback"></p>
+  <div id="game-container">
+    <!-- Add the tutorial button at the top -->
+    <div id="tutorial-button-container">
+      <button id="tutorial-button" onclick="openHelp()">How to Play</button>
     </div>
+
+    <h1>Code Race</h1>
+
+    <!-- Instruction for interactive substitution -->
+    <p id="instruction">Click on a letter in the cryptogram to enter your substitution.</p>
+
+    <!-- Cryptogram Display -->
+    <div id="scrollable-container">
+      <div id="cryptogram-container"></div>
+    </div>
+
+    <!-- Substitution form (hidden by default) -->
+    <div id="substitution-form" style="display: none;">
+      <label id="substitution-label"></label>
+      <input type="text" id="substitution-input" maxlength="1" />
+      <button id="substitution-confirm-button" onclick="submitLetterSubstitution()">Submit</button>
+    </div>
+
+    <!-- Author Info -->
+    <p id="author-name"></p>
+
+    <!-- Button Container -->
+    <div class="button-container">
+      <button id="exit-button" onclick="exitGame()">Quit</button>
+      <button id="check-button" onclick="checkSolution()">Submit Solution</button>
+    </div>
+
+    <!-- Feedback -->
+    <p id="feedback"></p>
+  </div>
+
 </body>
 <script src="/static/script.js"></script>
 </html>
