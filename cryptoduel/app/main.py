@@ -38,17 +38,17 @@ def get_cryptogram():
         if difficulty == "easy":
             prompt = (
                 "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
-                "Give me a short and simple inspirational quote using plain language, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+                "Give me a short and simple inspirational quote (an actual real quote) using plain language, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}. Try your best to use simple and common word patterns to make the quote easy to solve. Make sure to generate a unique quote every time and pull from a variety of genres and people."
             )
         elif difficulty == "hard":
             prompt = (
                 "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
-                "Give me a thought-provoking and complex quote with elevated vocabulary, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+                "Give me a thought-provoking and complex quote (an actual real quote) with elevated vocabulary, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}. Use very few common word patterns and instead use more complicated word patterns to make the quote quite difficult to solve.Make sure to generate a unique quote every time and pull from a variety of genres and people."
             )
         else:  # medium
             prompt = (
                 "You are acting as a generator to generate quotes for a project designed to help provide practice for the Science Olympiad event Codebusters. "
-                "Give me a moderately difficult quote with decent vocabulary variation, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}"
+                "Give me a moderately difficult quote (an actual real quote) with decent vocabulary variation, and the author, formatted as JSON like this: {\"quote\": \"...\", \"author\": \"...\"}. Use only a few simple word patterns and instead hard word patterns like SUCCESS or HAPPINESS to make the quote moderately difficult to solve.Make sure to generate a unique quote every time and pull from a variety of genres and people."
             )
 
         response = client.models.generate_content(
